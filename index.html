@@ -401,7 +401,7 @@ function compressImage(file, callback) {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const MAX = 1000;
+      const MAX = 800;
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -409,7 +409,7 @@ function compressImage(file, callback) {
       }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      callback(canvas.toDataURL('image/jpeg', 0.7));
+      callback(canvas.toDataURL('image/jpeg', 0.5));
     };
     img.src = ev.target.result;
   };
@@ -483,14 +483,17 @@ async function submitForm() {
   };
 
   try {
-    await fetch(SHEET_URL, {
+    console.log('Gönderiliyor... Payload boyutu:', JSON.stringify(payload).length, 'karakter');
+    const res = await fetch(SHEET_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    console.log('Gönderim tamamlandı:', res.type, res.status);
     showPage('pageSuccess');
   } catch(err) {
+    console.error('Fetch hatası:', err);
     alert('Bağlantı hatası. İnternet bağlantınızı kontrol edip tekrar deneyin.');
   } finally {
     btn.disabled = false;
