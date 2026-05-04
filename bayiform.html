@@ -46,6 +46,9 @@ input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba
 input::placeholder{color:#c4c0bb;font-weight:400;}
 .ferr{font-size:12px;color:var(--error);margin-top:3px;display:none;}
 .ferr.show{display:block;}
+select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 15px;color:var(--text);font-size:14.5px;font-family:'Nunito',sans-serif;font-weight:500;transition:all .18s;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239a9590' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;cursor:pointer;}
+select:focus{border-color:var(--accent);background-color:#fff;box-shadow:0 0 0 3px rgba(155,34,38,.08);}
+select option[value=""]{color:#c4c0bb;}
 
 /* PHOTOS */
 .photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -165,6 +168,30 @@ input::placeholder{color:#c4c0bb;font-weight:400;}
 <div class="page active" id="pageForm">
   <div class="hero"><h1>Bayi Bilgi Formu</h1><p>Lütfen aşağıdaki bilgileri eksiksiz ve doğru şekilde doldurunuz.</p></div>
   <div class="form-wrap">
+
+    <!-- Satış Temsilcisi -->
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <span class="sec-title">Satış Temsilcisi</span>
+      </div>
+      <div class="field">
+        <label>Adınızı seçin <span class="req">*</span></label>
+        <select id="satisTemsilcisi">
+          <option value="">-- Seçiniz --</option>
+          <option>Atakan Bediz</option>
+          <option>Can Tuna</option>
+          <option>Mahsum Bal</option>
+          <option>Mustafa Kemal Nalvuran</option>
+          <option>Özer Doğukan Erilli</option>
+          <option>Tuğçe Yıldırıcı</option>
+          <option>Uğur Akgün</option>
+          <option>Veysel Yunus Göloğlu</option>
+          <option>Yunus Yakar</option>
+        </select>
+        <div class="ferr" id="errTemsilci">⚠ Satış temsilcisi seçimi zorunludur</div>
+      </div>
+    </div>
 
     <!-- Kişi & Firma -->
     <div class="card">
@@ -302,7 +329,10 @@ input::placeholder{color:#c4c0bb;font-weight:400;}
 <!-- MODAL -->
 <div class="modal" id="modal" onclick="closeModal()">
   <button class="modal-close" onclick="closeModal()">✕</button>
-  <img id="modalImg" src="" alt=""/>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;" onclick="event.stopPropagation()">
+    <img id="modalImg" src="" alt="" style="max-width:90vw;max-height:78vh;border-radius:10px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.5);"/>
+    <a id="modalLink" href="" target="_blank" style="background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:10px 22px;border-radius:8px;font-size:13.5px;font-weight:700;text-decoration:none;font-family:Nunito,sans-serif;display:none;">↗ Drive'da Tam Boyut Aç</a>
+  </div>
 </div>
 
 <script>
@@ -422,16 +452,18 @@ const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzvlbGSIizorYkQA1neMR
 
 async function submitForm() {
   let ok = true;
-  hideFerr('errAdSoyad'); hideFerr('errFirma'); hideFerr('errFoto'); hideFerr('errKonum'); hideFerr('errGps');
+  hideFerr('errTemsilci'); hideFerr('errAdSoyad'); hideFerr('errFirma'); hideFerr('errFoto'); hideFerr('errKonum'); hideFerr('errGps');
 
+  const satisTemsilcisi = document.getElementById('satisTemsilcisi').value;
   const adSoyad = document.getElementById('adSoyad').value.trim();
   const firma   = document.getElementById('firma').value.trim();
   const mapsLink= document.getElementById('mapsLink').value.trim();
 
-  if (!adSoyad)                   { showFerr('errAdSoyad'); ok=false; }
-  if (!firma)                     { showFerr('errFirma');   ok=false; }
-  if (!photos.dis || !photos.ici) { showFerr('errFoto');    ok=false; }
-  if (!gpsCoords && !mapsLink)    { showFerr('errKonum');   ok=false; }
+  if (!satisTemsilcisi)           { showFerr('errTemsilci'); ok=false; }
+  if (!adSoyad)                   { showFerr('errAdSoyad');  ok=false; }
+  if (!firma)                     { showFerr('errFirma');    ok=false; }
+  if (!photos.dis || !photos.ici) { showFerr('errFoto');     ok=false; }
+  if (!gpsCoords && !mapsLink)    { showFerr('errKonum');    ok=false; }
   if (!ok) return;
 
   // Butonu yükleniyor yap
@@ -441,6 +473,7 @@ async function submitForm() {
 
   const payload = {
     tarih:    new Date().toLocaleString('tr-TR'),
+    satisTemsilcisi,
     adSoyad, firma,
     lat:      gpsCoords ? gpsCoords.lat : '',
     lng:      gpsCoords ? gpsCoords.lng : '',
@@ -504,25 +537,35 @@ async function renderPanel() {
       return;
     }
 
-    // Sütun sırası: [tarih, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
+    // Sütun sırası: [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
     container.innerHTML = '<div class="cards-grid">' + dataRows.map((row, i) => {
-      const [tarih, adSoyad, firma, lat, lng, mapsLink, disSrc, iciSrc] = row;
+      const [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disSrc, iciSrc] = row;
       const mapsHref = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
+      const driveThumb = (url) => {
+        if (!url) return null;
+        const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null;
+      };
+      const disThumb = driveThumb(disSrc);
+      const iciThumb = driveThumb(iciSrc);
       return `
         <div class="bayi-card">
           <div class="card-photos">
             <div class="card-photo" onclick="openModalIdx(${i},'dis')">
-              ${disSrc ? `<img src="${disSrc}" alt=""/>` : '<span style="font-size:11px;color:#bbb">Yok</span>'}
+              ${disThumb ? `<img src="${disThumb}" alt="" onerror="this.style.display='none'"/>` : '<span style="font-size:11px;color:#bbb">Yok</span>'}
               <div class="cp-label">Dış Cephe</div>
+              ${disSrc ? `<a href="${disSrc}" target="_blank" style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,0.9);border-radius:4px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--accent);text-decoration:none;" onclick="event.stopPropagation()">↗ Aç</a>` : ''}
             </div>
             <div class="card-photo" onclick="openModalIdx(${i},'ici')">
-              ${iciSrc ? `<img src="${iciSrc}" alt=""/>` : '<span style="font-size:11px;color:#bbb">Yok</span>'}
+              ${iciThumb ? `<img src="${iciThumb}" alt="" onerror="this.style.display='none'"/>` : '<span style="font-size:11px;color:#bbb">Yok</span>'}
               <div class="cp-label">Dükkan İçi</div>
+              ${iciSrc ? `<a href="${iciSrc}" target="_blank" style="position:absolute;top:8px;left:8px;background:rgba(255,255,255,0.9);border-radius:4px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--accent);text-decoration:none;" onclick="event.stopPropagation()">↗ Aç</a>` : ''}
             </div>
           </div>
           <div class="card-body">
             <div class="card-firma">${firma || ''}</div>
             <div class="card-ad">${adSoyad || ''}</div>
+            ${satisTemsilcisi ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:10px;">👤 ${satisTemsilcisi}</div>` : ''}
             <div class="card-meta">
               ${mapsHref ? `<div class="meta-item"><span>📍</span><a href="${mapsHref}" target="_blank">${lat}, ${lng}</a></div>` : ''}
               ${mapsLink ? `<div class="meta-item"><span>🔗</span><a href="${mapsLink}" target="_blank">Google Maps Linki</a></div>` : ''}
@@ -542,10 +585,19 @@ function openModalIdx(idx, type) {
   const rows = window._subs || [];
   const row  = rows[idx];
   if (!row) return;
-  // [tarih, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
-  const src = type === 'dis' ? row[6] : row[7];
-  if (!src) return;
-  document.getElementById('modalImg').src = src;
+  // [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
+  const url = type === 'dis' ? row[7] : row[8];
+  if (!url) return;
+  // Drive linkinden thumbnail oluştur
+  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) {
+    document.getElementById('modalImg').src = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
+    document.getElementById('modalLink').href = url;
+    document.getElementById('modalLink').style.display = 'inline-block';
+  } else {
+    document.getElementById('modalImg').src = url;
+    document.getElementById('modalLink').style.display = 'none';
+  }
   document.getElementById('modal').classList.add('show');
 }
 
@@ -555,8 +607,8 @@ function closeModal() { document.getElementById('modal').classList.remove('show'
 function exportCSV() {
   const rows = window._subs || [];
   if (!rows.length) return;
-  const header = ['Tarih','Ad Soyad','Firma Ünvanı','Enlem','Boylam','Maps Linki'];
-  const data = rows.map(r => [r[0], r[1], r[2], r[3], r[4], r[5]]);
+  const header = ['Tarih','Satış Temsilcisi','Ad Soyad','Firma Ünvanı','Enlem','Boylam','Maps Linki'];
+  const data = rows.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6]]);
   const csv = [header, ...data].map(r => r.map(c => '"' + (c||'') + '"').join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
