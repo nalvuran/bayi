@@ -46,6 +46,13 @@ input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba
 input::placeholder{color:#c4c0bb;font-weight:400;}
 .ferr{font-size:12px;color:var(--error);margin-top:3px;display:none;}
 .ferr.show{display:block;}
+.radio-group{display:flex;gap:10px;margin-top:2px;}
+.radio-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted);transition:all .18s;background:var(--surface2);user-select:none;}
+.radio-opt input{display:none;}
+.radio-opt:hover{border-color:var(--border2);color:var(--text2);}
+.radio-opt.selected-yes{border-color:var(--success);background:#f0faf5;color:var(--success);box-shadow:0 0 0 3px rgba(45,122,79,.08);}
+.radio-opt.selected-no{border-color:#c0392b;background:#fdf2f2;color:#c0392b;box-shadow:0 0 0 3px rgba(192,57,43,.08);}
+.radio-check{width:20px;height:20px;border-radius:5px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;}
 select{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 15px;color:var(--text);font-size:14.5px;font-family:'Nunito',sans-serif;font-weight:500;transition:all .18s;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239a9590' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;cursor:pointer;}
 select:focus{border-color:var(--accent);background-color:#fff;box-shadow:0 0 0 3px rgba(155,34,38,.08);}
 select option[value=""]{color:#c4c0bb;}
@@ -191,6 +198,27 @@ select option[value=""]{color:#c4c0bb;}
         </select>
         <div class="ferr" id="errTemsilci">⚠ Satış temsilcisi seçimi zorunludur</div>
       </div>
+      <div class="field">
+        <label>Distribütör <span class="req">*</span></label>
+        <select id="distributor">
+          <option value="">-- Seçiniz --</option>
+          <option>ALDOĞAN ISITMA SOĞUTMA</option>
+          <option>BURAK ÖZKAN KOŞAR</option>
+          <option>FERTERM ENERJİ</option>
+          <option>İKİZLER GRUP</option>
+          <option>KARPA ISITMA SOĞUTMA</option>
+          <option>KATRE ISI</option>
+          <option>ÖNEY ISI</option>
+          <option>OSMANOĞULLARI</option>
+          <option>ÖZGE MÜHENDİSLİK</option>
+          <option>PAKTAŞ</option>
+          <option>PANALI DTM</option>
+          <option>SEREN DTM</option>
+          <option>TİM KARDEŞLER</option>
+          <option>YELKEN YAPI</option>
+        </select>
+        <div class="ferr" id="errDistributor">⚠ Distribütör seçimi zorunludur</div>
+      </div>
     </div>
 
     <!-- Kişi & Firma -->
@@ -208,6 +236,34 @@ select option[value=""]{color:#c4c0bb;}
         <label>Firma Ünvanı <span class="req">*</span></label>
         <input type="text" id="firma" placeholder="Örn: Yılmaz Klima San. Tic. Ltd. Şti."/>
         <div class="ferr" id="errFirma">⚠ Firma Ünvanı zorunludur</div>
+      </div>
+      <div class="field">
+        <label>Tabela Talebi Var Mı? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-opt" id="tabelaEvetLbl" onclick="selectRadio('tabela','evet')">
+            <input type="radio" name="tabela" value="evet"/>
+            <span class="radio-check" id="tabelaEvetCheck"></span> Evet
+          </label>
+          <label class="radio-opt" id="tabelaHayirLbl" onclick="selectRadio('tabela','hayir')">
+            <input type="radio" name="tabela" value="hayir"/>
+            <span class="radio-check" id="tabelaHayirCheck"></span> Hayır
+          </label>
+        </div>
+        <div class="ferr" id="errTabela">⚠ Tabela talebi seçimi zorunludur</div>
+      </div>
+      <div class="field">
+        <label>Stand Talebi Var Mı? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label class="radio-opt" id="standEvetLbl" onclick="selectRadio('stand','evet')">
+            <input type="radio" name="stand" value="evet"/>
+            <span class="radio-check" id="standEvetCheck"></span> Evet
+          </label>
+          <label class="radio-opt" id="standHayirLbl" onclick="selectRadio('stand','hayir')">
+            <input type="radio" name="stand" value="hayir"/>
+            <span class="radio-check" id="standHayirCheck"></span> Hayır
+          </label>
+        </div>
+        <div class="ferr" id="errStand">⚠ Stand talebi seçimi zorunludur</div>
       </div>
     </div>
 
@@ -359,6 +415,21 @@ function showPage(id) {
 
 function goAdmin() { showPage('pageLogin'); }
 
+// ── RADIO BUTTONS ────────────────────────────────────────────
+let radioState = { tabela: '', stand: '' };
+
+function selectRadio(group, val) {
+  radioState[group] = val;
+  const evet  = document.getElementById(group + 'EvetLbl');
+  const hayir = document.getElementById(group + 'HayirLbl');
+  const evet_check  = document.getElementById(group + 'EvetCheck');
+  const hayir_check = document.getElementById(group + 'HayirCheck');
+  evet.className  = 'radio-opt' + (val === 'evet'  ? ' selected-yes' : '');
+  hayir.className = 'radio-opt' + (val === 'hayir' ? ' selected-no'  : '');
+  evet_check.innerHTML  = val === 'evet'  ? '✓' : '';
+  hayir_check.innerHTML = val === 'hayir' ? '✕' : '';
+}
+
 // ── GPS ──────────────────────────────────────────────────────
 function getGPS() {
   const dot = document.getElementById('locDot');
@@ -452,18 +523,24 @@ const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzvlbGSIizorYkQA1neMR
 
 async function submitForm() {
   let ok = true;
-  hideFerr('errTemsilci'); hideFerr('errAdSoyad'); hideFerr('errFirma'); hideFerr('errFoto'); hideFerr('errKonum'); hideFerr('errGps');
+  hideFerr('errTemsilci'); hideFerr('errDistributor'); hideFerr('errAdSoyad'); hideFerr('errFirma'); hideFerr('errTabela'); hideFerr('errStand'); hideFerr('errFoto'); hideFerr('errKonum'); hideFerr('errGps');
 
   const satisTemsilcisi = document.getElementById('satisTemsilcisi').value;
+  const distributor = document.getElementById('distributor').value;
   const adSoyad = document.getElementById('adSoyad').value.trim();
   const firma   = document.getElementById('firma').value.trim();
   const mapsLink= document.getElementById('mapsLink').value.trim();
+  const tabela  = radioState.tabela;
+  const stand   = radioState.stand;
 
-  if (!satisTemsilcisi)           { showFerr('errTemsilci'); ok=false; }
-  if (!adSoyad)                   { showFerr('errAdSoyad');  ok=false; }
-  if (!firma)                     { showFerr('errFirma');    ok=false; }
-  if (!photos.dis || !photos.ici) { showFerr('errFoto');     ok=false; }
-  if (!gpsCoords && !mapsLink)    { showFerr('errKonum');    ok=false; }
+  if (!satisTemsilcisi)           { showFerr('errTemsilci');    ok=false; }
+  if (!distributor)               { showFerr('errDistributor'); ok=false; }
+  if (!adSoyad)                   { showFerr('errAdSoyad');     ok=false; }
+  if (!firma)                     { showFerr('errFirma');       ok=false; }
+  if (!tabela)                    { showFerr('errTabela');       ok=false; }
+  if (!stand)                     { showFerr('errStand');        ok=false; }
+  if (!photos.dis || !photos.ici) { showFerr('errFoto');         ok=false; }
+  if (!gpsCoords && !mapsLink)    { showFerr('errKonum');        ok=false; }
   if (!ok) return;
 
   // Butonu yükleniyor yap
@@ -474,7 +551,10 @@ async function submitForm() {
   const payload = {
     tarih:    new Date().toLocaleString('tr-TR'),
     satisTemsilcisi,
+    distributor,
     adSoyad, firma,
+    tabela:   tabela === 'evet' ? 'Evet' : 'Hayır',
+    stand:    stand  === 'evet' ? 'Evet' : 'Hayır',
     lat:      gpsCoords ? gpsCoords.lat : '',
     lng:      gpsCoords ? gpsCoords.lng : '',
     mapsLink,
@@ -540,9 +620,9 @@ async function renderPanel() {
       return;
     }
 
-    // Sütun sırası: [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
+    // Sütun sırası: [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
     container.innerHTML = '<div class="cards-grid">' + dataRows.map((row, i) => {
-      const [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disSrc, iciSrc] = row;
+      const [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disSrc, iciSrc] = row;
       const mapsHref = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
       const driveThumb = (url) => {
         if (!url) return null;
@@ -568,8 +648,11 @@ async function renderPanel() {
           <div class="card-body">
             <div class="card-firma">${firma || ''}</div>
             <div class="card-ad">${adSoyad || ''}</div>
-            ${satisTemsilcisi ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:10px;">👤 ${satisTemsilcisi}</div>` : ''}
+            ${satisTemsilcisi ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px;">👤 ${satisTemsilcisi}</div>` : ''}
+            ${distributor ? `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;">🏢 ${distributor}</div>` : ''}
             <div class="card-meta">
+              ${tabela ? `<div class="meta-item"><span>🪧</span> Tabela: <strong>${tabela}</strong></div>` : ''}
+              ${stand ? `<div class="meta-item"><span>🛍️</span> Stand: <strong>${stand}</strong></div>` : ''}
               ${mapsHref ? `<div class="meta-item"><span>📍</span><a href="${mapsHref}" target="_blank">${lat}, ${lng}</a></div>` : ''}
               ${mapsLink ? `<div class="meta-item"><span>🔗</span><a href="${mapsLink}" target="_blank">Google Maps Linki</a></div>` : ''}
             </div>
@@ -589,7 +672,8 @@ function openModalIdx(idx, type) {
   const row  = rows[idx];
   if (!row) return;
   // [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
-  const url = type === 'dis' ? row[7] : row[8];
+  // [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
+  const url = type === 'dis' ? row[10] : row[11];
   if (!url) return;
   // Drive linkinden thumbnail oluştur
   const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -610,8 +694,8 @@ function closeModal() { document.getElementById('modal').classList.remove('show'
 function exportCSV() {
   const rows = window._subs || [];
   if (!rows.length) return;
-  const header = ['Tarih','Satış Temsilcisi','Ad Soyad','Firma Ünvanı','Enlem','Boylam','Maps Linki'];
-  const data = rows.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6]]);
+  const header = ['Tarih','Satış Temsilcisi','Distribütör','Ad Soyad','Firma Ünvanı','Tabela Talebi','Stand Talebi','Enlem','Boylam','Maps Linki'];
+  const data = rows.map(r => [r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9]]);
   const csv = [header, ...data].map(r => r.map(c => '"' + (c||'') + '"').join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'}));
