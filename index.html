@@ -489,6 +489,55 @@ select option[value=""]{color:#c4c0bb;}
   </div>
 </div>
 
+<!-- DÜZENLEME MODALI -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-box">
+    <h3>Kaydı Düzenle</h3>
+    <input type="hidden" id="editRowIndex"/>
+    <div class="field">
+      <label class="field-label">Ad Soyad</label>
+      <input type="text" id="editAdSoyad"/>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label class="field-label">Tabela Talebi</label>
+      <div class="radio-group">
+        <label class="radio-opt" id="editTabelaEvetLbl" onclick="editRadio('tabela','Evet')"><span class="radio-check" id="editTabelaEvetCheck"></span> Evet</label>
+        <label class="radio-opt" id="editTabelaHayirLbl" onclick="editRadio('tabela','Hayir')"><span class="radio-check" id="editTabelaHayirCheck"></span> Hayır</label>
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label class="field-label">Stand Talebi</label>
+      <div class="radio-group">
+        <label class="radio-opt" id="editStandEvetLbl" onclick="editRadio('stand','Evet')"><span class="radio-check" id="editStandEvetCheck"></span> Evet</label>
+        <label class="radio-opt" id="editStandHayirLbl" onclick="editRadio('stand','Hayir')"><span class="radio-check" id="editStandHayirCheck"></span> Hayır</label>
+      </div>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label class="field-label">Dış Cephe Fotoğrafı</label>
+      <input type="file" id="editDisFoto" accept="image/*" style="margin-top:6px;"/>
+      <div id="editDisMevcut" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label class="field-label">Dükkan İçi Fotoğrafı</label>
+      <input type="file" id="editIciFoto" accept="image/*" style="margin-top:6px;"/>
+      <div id="editIciMevcut" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
+    </div>
+    <div class="field" style="margin-top:12px;">
+      <label class="field-label">Konum (GPS)</label>
+      <button class="gps-btn" onclick="editGetGPS()" style="margin-bottom:8px;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        GPS ile Güncelle
+      </button>
+      <div id="editGpsStatus" style="font-size:12px;color:var(--muted);"></div>
+      <input type="url" id="editMapsLink" placeholder="veya Google Maps linki" style="margin-top:8px;"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="submit-btn" onclick="editKaydet()" style="flex:1;">Kaydet</button>
+      <button class="logout-btn" onclick="editKapat()" style="flex:1;">İptal</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal" id="modal" onclick="closeModal()">
   <button class="modal-close" onclick="closeModal()">✕</button>
@@ -728,7 +777,7 @@ function showFerr(id, msg) {
 }
 function hideFerr(id) { document.getElementById(id).classList.remove('show'); }
 
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzigD96Q23dtTQ29AttyjwbzcmiP8fspmUMXpI0lGYomT0SiO03TQrWOiqXrfupo3uV/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbywd3Yifyr9E96a738QvwNXwSg2HOk8OywJ5lIr1JuZZXDxB1bEbY_K3aDRDvVqZqN-/exec';
 
 async function submitForm() {
   let ok = true;
@@ -831,13 +880,13 @@ async function renderPanel() {
       return;
     }
 
-    // Sütun sırası: [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
+    // Sütun sırası: [tarih, satisTemsilcisi, distributor, adSoyad, firma, platformId, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
     container.innerHTML = '<div class="cards-grid">' + dataRows.map((row, i) => {
-      const [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disSrc, iciSrc] = row;
+      const [tarih, satisTemsilcisi, distributor, adSoyad, firma, platformId, tabela, stand, lat, lng, mapsLink, disSrc, iciSrc] = row;
       const mapsHref = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
       const driveThumb = (url) => {
         if (!url) return null;
-        const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        const m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
         return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null;
       };
       const disThumb = driveThumb(disSrc);
@@ -860,7 +909,8 @@ async function renderPanel() {
             <div class="card-firma">${firma || ''}</div>
             <div class="card-ad">${adSoyad || ''}</div>
             ${satisTemsilcisi ? `<div style="font-size:12px;color:var(--accent);font-weight:700;margin-bottom:4px;">👤 ${satisTemsilcisi}</div>` : ''}
-            ${distributor ? `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;">🏢 ${distributor}</div>` : ''}
+            ${distributor ? `<div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:4px;">🏢 ${distributor}</div>` : ''}
+            ${platformId ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${platformId}</div>` : ''}
             <div class="card-meta">
               ${tabela ? `<div class="meta-item"><span>🪧</span> Tabela: <strong>${tabela}</strong></div>` : ''}
               ${stand ? `<div class="meta-item"><span>🛍️</span> Stand: <strong>${stand}</strong></div>` : ''}
@@ -884,7 +934,8 @@ function openModalIdx(idx, type) {
   if (!row) return;
   // [tarih, satisTemsilcisi, adSoyad, firma, lat, lng, mapsLink, disCephe, dukkanIci]
   // [tarih, satisTemsilcisi, distributor, adSoyad, firma, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
-  const url = type === 'dis' ? row[10] : row[11];
+  // [tarih, satisTemsilcisi, distributor, adSoyad, firma, platformId, tabela, stand, lat, lng, mapsLink, disCephe, dukkanIci]
+  const url = type === 'dis' ? row[11] : row[12];
   if (!url) return;
   // Drive linkinden thumbnail oluştur
   const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -964,11 +1015,122 @@ async function renderTemsilciPanel() {
               ${mapsLink ? `<div class="meta-item"><span>🔗</span><a href="${mapsLink}" target="_blank">Maps Linki</a></div>` : ''}
             </div>
             <div class="card-date">${tarih||''}</div>
+            <button onclick="editAc(${i})" style="margin-top:10px;width:100%;background:var(--accent-light);border:1.5px solid rgba(155,34,38,.2);color:var(--accent);padding:8px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">✏️ Düzenle</button>
           </div>
         </div>`;
     }).join('') + '</div>';
   } catch(e) {
     container.innerHTML = '<div class="empty-state"><p>Bağlantı hatası.</p></div>';
+  }
+}
+
+
+// ── DÜZENLEME ─────────────────────────────────────────────────
+let editGpsCoords = null;
+let editRadioState = { tabela: '', stand: '' };
+
+function editAc(idx) {
+  const rows = window._temsilciRows || [];
+  const row  = rows[idx];
+  if (!row) return;
+  // [tarih, satisTemsilcisi, distributor, adSoyad, firma, platformId, tabela, stand, lat, lng, mapsLink, dis, ici]
+  const [tarih, , , adSoyad, firma, platId, tabela, stand, lat, lng, mapsLink, disSrc, iciSrc] = row;
+
+  document.getElementById('editRowIndex').value = idx;
+  document.getElementById('editAdSoyad').value  = adSoyad || '';
+  document.getElementById('editMapsLink').value  = mapsLink || '';
+  document.getElementById('editDisMevcut').textContent = disSrc ? '✓ Mevcut fotoğraf var' : 'Fotoğraf yok';
+  document.getElementById('editIciMevcut').textContent = iciSrc ? '✓ Mevcut fotoğraf var' : 'Fotoğraf yok';
+  document.getElementById('editDisFoto').value = '';
+  document.getElementById('editIciFoto').value = '';
+
+  editGpsCoords = lat && lng ? { lat, lng } : null;
+  document.getElementById('editGpsStatus').textContent = lat && lng ? `📍 Mevcut: ${lat}, ${lng}` : '';
+
+  // Tabela/Stand seçimlerini göster
+  editRadioState.tabela = tabela === 'Evet' ? 'Evet' : 'Hayir';
+  editRadioState.stand  = stand  === 'Evet' ? 'Evet' : 'Hayir';
+  editRadio('tabela', editRadioState.tabela);
+  editRadio('stand',  editRadioState.stand);
+
+  document.getElementById('editModal').classList.add('show');
+}
+
+function editKapat() {
+  document.getElementById('editModal').classList.remove('show');
+}
+
+function editRadio(group, val) {
+  editRadioState[group] = val;
+  const evet  = document.getElementById('edit' + group.charAt(0).toUpperCase() + group.slice(1) + 'EvetLbl');
+  const hayir = document.getElementById('edit' + group.charAt(0).toUpperCase() + group.slice(1) + 'HayirLbl');
+  const ec    = document.getElementById('edit' + group.charAt(0).toUpperCase() + group.slice(1) + 'EvetCheck');
+  const hc    = document.getElementById('edit' + group.charAt(0).toUpperCase() + group.slice(1) + 'HayirCheck');
+  if (evet && hayir) {
+    evet.className  = 'radio-opt' + (val === 'Evet'  ? ' selected-yes' : '');
+    hayir.className = 'radio-opt' + (val === 'Hayir' ? ' selected-no'  : '');
+    if (ec) ec.innerHTML = val === 'Evet'  ? '✓' : '';
+    if (hc) hc.innerHTML = val === 'Hayir' ? '✕' : '';
+  }
+}
+
+function editGetGPS() {
+  const status = document.getElementById('editGpsStatus');
+  status.textContent = 'Konum alınıyor...';
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      editGpsCoords = { lat: p.coords.latitude.toFixed(6), lng: p.coords.longitude.toFixed(6) };
+      status.textContent = '📍 ' + editGpsCoords.lat + ', ' + editGpsCoords.lng;
+    },
+    () => { status.textContent = '⚠ Konum alınamadı'; }
+  );
+}
+
+async function editKaydet() {
+  const idx      = parseInt(document.getElementById('editRowIndex').value);
+  const rows     = window._temsilciRows || [];
+  const row      = rows[idx];
+  if (!row) return;
+
+  const adSoyad  = document.getElementById('editAdSoyad').value.trim();
+  const mapsLink = document.getElementById('editMapsLink').value.trim();
+  const tabela   = editRadioState.tabela === 'Evet' ? 'Evet' : 'Hayır';
+  const stand    = editRadioState.stand  === 'Evet' ? 'Evet' : 'Hayır';
+  const disFoto  = document.getElementById('editDisFoto').files[0];
+  const iciFoto  = document.getElementById('editIciFoto').files[0];
+
+  const btn = document.querySelector('#editModal .submit-btn');
+  btn.disabled = true; btn.textContent = 'Kaydediliyor...';
+
+  // Fotoğraf varsa sıkıştır
+  const disBase64 = disFoto  ? await new Promise(r => compressImage(disFoto,  r)) : null;
+  const iciBase64 = iciFoto  ? await new Promise(r => compressImage(iciFoto,  r)) : null;
+
+  const payload = {
+    editMode:  true,
+    rowIndex:  idx + 2, // Sheets'te 1=başlık, veriler 2'den başlar
+    adSoyad,
+    tabela, stand,
+    lat:       editGpsCoords ? editGpsCoords.lat : (row[8] || ''),
+    lng:       editGpsCoords ? editGpsCoords.lng : (row[9] || ''),
+    mapsLink:  mapsLink || row[10] || '',
+    disCephe:  disBase64 || null,
+    dukkanIci: iciBase64 || null,
+  };
+
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    editKapat();
+    alert('Kayıt güncellendi!');
+    renderTemsilciPanel();
+  } catch(e) {
+    alert('Bağlantı hatası.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Kaydet';
   }
 }
 
