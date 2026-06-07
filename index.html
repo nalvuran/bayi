@@ -886,7 +886,7 @@ async function renderPanel() {
       const mapsHref = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
       const driveThumb = (url) => {
         if (!url) return null;
-        const m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+        const m = String(url).match(/[\/=]([a-zA-Z0-9_-]{25,})/);
         return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null;
       };
       const disThumb = driveThumb(disSrc);
@@ -938,7 +938,7 @@ function openModalIdx(idx, type) {
   const url = type === 'dis' ? row[11] : row[12];
   if (!url) return;
   // Drive linkinden thumbnail oluştur
-  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const m = String(url).match(/[\/=]([a-zA-Z0-9_-]{25,})/);
   if (m) {
     document.getElementById('modalImg').src = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
     document.getElementById('modalLink').href = url;
@@ -996,7 +996,7 @@ async function renderTemsilciPanel() {
     container.innerHTML = '<div class="cards-grid">' + myRows.map((row, i) => {
       const [tarih, , dist, adSoyad, firma, platId, tabela, stand, lat, lng, mapsLink, disSrc, iciSrc] = row;
       const mapsHref = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
-      const driveThumb = url => { if (!url) return null; const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null; };
+      const driveThumb = url => { if (!url) return null; const m = String(url).match(/[\/=]([a-zA-Z0-9_-]{25,})/); return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null; };
       return `
         <div class="bayi-card">
           <div class="card-photos">
