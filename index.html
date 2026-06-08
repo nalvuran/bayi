@@ -1144,13 +1144,15 @@ async function renderDashboard() {
     const json = await resp.json();
     const rows = (json.data || []).slice(1);
     // [tarih, satisTemsilcisi, distributor, adSoyad, firma, platformId, tabela, stand, lat, lng, mapsLink, dis, ici]
-    const tumFirmalar = MUSTERI_DATA.length;
-    const eksikSayi   = tumFirmalar - girilenSayi;
-    const oran = Math.round((girilenSayi / tumFirmalar) * 100);
-
     // Girilen firma adlarını normalize et (büyük harf, boşluk trim)
     const normalize = s => s ? s.toString().trim().toUpperCase() : '';
     const girilenNorm = new Set(rows.map(r => normalize(r[4])));
+
+    // Toplam girilen sayısını normalize edilmiş eşleşmeyle hesapla
+    const girilenSayi = [...new Set(MUSTERI_DATA.map(m => normalize(m.ad)))].filter(ad => girilenNorm.has(ad)).length;
+    const tumFirmalar = MUSTERI_DATA.length;
+    const eksikSayi   = tumFirmalar - girilenSayi;
+    const oran = Math.round((girilenSayi / tumFirmalar) * 100);
 
     // Temsilci bazında - sadece Sheets'te kaydı olan temsilcileri göster
     const temsilciStat = {};
@@ -1159,7 +1161,7 @@ async function renderDashboard() {
       if (!temsilciStat[t]) temsilciStat[t] = { toplam: 0, girilen: 0 };
     });
     MUSTERI_DATA.forEach(m => {
-      if (!temsilciStat[m.temsilci]) return; // Sheets'te kaydı olmayan temsilciyi atla
+      if (!temsilciStat[m.temsilci]) return;
       temsilciStat[m.temsilci].toplam++;
       if (girilenNorm.has(normalize(m.ad))) temsilciStat[m.temsilci].girilen++;
     });
@@ -1171,9 +1173,6 @@ async function renderDashboard() {
       distStat[m.dist].toplam++;
       if (girilenNorm.has(normalize(m.ad))) distStat[m.dist].girilen++;
     });
-
-    // Toplam girilen sayısını normalize edilmiş eşleşmeyle hesapla
-    const girilenSayi = [...new Set(MUSTERI_DATA.map(m => normalize(m.ad)))].filter(ad => girilenNorm.has(ad)).length;
 
     // Tabela/Stand talepleri
     const tabelaEvet = rows.filter(r => r[6] === 'Evet').length;
