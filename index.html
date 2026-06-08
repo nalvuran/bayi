@@ -1154,16 +1154,18 @@ async function renderDashboard() {
     const eksikSayi   = tumFirmalar - girilenSayi;
     const oran = Math.round((girilenSayi / tumFirmalar) * 100);
 
-    // Temsilci bazında - sadece Sheets'te kaydı olan temsilcileri göster
+    // Temsilci bazında - girilen sayısı doğrudan Sheets'ten, toplam Excel'den
     const temsilciStat = {};
+    // Önce Sheets'teki gerçek girilen sayılarını hesapla
     rows.forEach(r => {
       const t = r[1]; if (!t) return;
       if (!temsilciStat[t]) temsilciStat[t] = { toplam: 0, girilen: 0 };
+      temsilciStat[t].girilen++;
     });
+    // Toplam firma sayısını Excel'den al
     MUSTERI_DATA.forEach(m => {
       if (!temsilciStat[m.temsilci]) return;
       temsilciStat[m.temsilci].toplam++;
-      if (girilenNorm.has(normalize(m.ad))) temsilciStat[m.temsilci].girilen++;
     });
 
     // Distribütör bazında
