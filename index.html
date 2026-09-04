@@ -286,7 +286,12 @@ select option[value=""]{color:#c4c0bb;}
       </div>
       <div class="field">
         <label>Telefon</label>
-        <input type="tel" id="telefon" placeholder="05XX XXX XX XX"/>
+        <div style="display:flex;align-items:center;gap:0;">
+          <span style="background:var(--surface2);border:1.5px solid var(--border);border-right:none;border-radius:10px 0 0 10px;padding:12px 14px;font-size:14.5px;font-weight:700;color:var(--text2);white-space:nowrap;line-height:1;">0 (5</span>
+          <input type="tel" id="telefon" placeholder="XX) XXX XX XX" maxlength="11"
+            style="border-radius:0 10px 10px 0;border-left:none;"
+            oninput="formatTelefon(this)"/>
+        </div>
       </div>
       <div class="field">
         <label>E-Mail</label>
@@ -619,15 +624,27 @@ select option[value=""]{color:#c4c0bb;}
         <label class="radio-opt" id="editStandHayirLbl" onclick="editRadio('stand','Hayir')"><span class="radio-check" id="editStandHayirCheck"></span> Hayır</label>
       </div>
     </div>
-    <div class="field" style="margin-top:12px;">
-      <label class="field-label">Dış Cephe Fotoğrafı</label>
-      <input type="file" id="editDisFoto" accept="image/*" style="margin-top:6px;"/>
-      <div id="editDisMevcut" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
-    </div>
-    <div class="field" style="margin-top:12px;">
-      <label class="field-label">Dükkan İçi Fotoğrafı</label>
-      <input type="file" id="editIciFoto" accept="image/*" style="margin-top:6px;"/>
-      <div id="editIciMevcut" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
+    <!-- ÖNCESİ FOTOĞRAFLAR -->
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">🔒 Öncesi Fotoğrafları</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+        <div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:6px;">Dış Cephe</div>
+          <div id="editDisOnceBox" style="aspect-ratio:4/3;border-radius:10px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <img id="editDisOnceImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;" onerror="this.style.display='none'"/>
+            <span id="editDisOnceYok" style="font-size:11px;color:var(--muted);">Fotoğraf yok</span>
+          </div>
+          <a id="editDisOnceLink" href="" target="_blank" style="display:none;font-size:11px;color:var(--accent);margin-top:4px;display:block;">↗ Büyük Aç</a>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:6px;">Dükkan İçi</div>
+          <div id="editIciOnceBox" style="aspect-ratio:4/3;border-radius:10px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <img id="editIciOnceImg" src="" style="width:100%;height:100%;object-fit:cover;display:none;" onerror="this.style.display='none'"/>
+            <span id="editIciOnceYok" style="font-size:11px;color:var(--muted);">Fotoğraf yok</span>
+          </div>
+          <a id="editIciOnceLink" href="" target="_blank" style="display:none;font-size:11px;color:var(--accent);margin-top:4px;display:block;">↗ Büyük Aç</a>
+        </div>
+      </div>
     </div>
     <div class="field" style="margin-top:12px;">
       <label class="field-label">Konum (GPS)</label>
@@ -822,6 +839,23 @@ function selectRadio(group, val) {
   hayir_check.innerHTML = val === 'hayir' ? '✕' : '';
 }
 
+// ── TELEFON FORMAT ───────────────────────────────────────────
+function formatTelefon(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 9) v = v.slice(0, 9);
+  let formatted = '';
+  if (v.length > 0) formatted += v.slice(0, 2);
+  if (v.length > 2) formatted += ') ' + v.slice(2, 5);
+  if (v.length > 5) formatted += ' ' + v.slice(5, 7);
+  if (v.length > 7) formatted += ' ' + v.slice(7, 9);
+  input.value = formatted;
+}
+
+function getTelefonTam() {
+  const val = document.getElementById('telefon').value.replace(/\D/g, '');
+  return val ? '05' + val : '';
+}
+
 // ── GPS ──────────────────────────────────────────────────────
 function getGPS() {
   const dot = document.getElementById('locDot');
@@ -927,7 +961,7 @@ async function submitForm() {
   const adSoyad = document.getElementById('adSoyad').value.trim();
   const firma   = document.getElementById('firma').value.trim();
   const platformId = document.getElementById('platformId').value.trim();
-  const telefon = document.getElementById('telefon').value.trim();
+  const telefon = getTelefonTam();
   const email   = document.getElementById('email').value.trim();
   const mapsLink= document.getElementById('mapsLink').value.trim();
   const tabela  = radioState.tabela;
@@ -1213,12 +1247,30 @@ function editAc(idx) {
   document.getElementById('editTelefon').value  = telefon2 || '';
   document.getElementById('editEmail').value    = email2 || '';
   document.getElementById('editMapsLink').value = mapsLink2 || mapsLink || '';
-  document.getElementById('editDisMevcut').textContent = disSrc2 ? '✓ Öncesi dış fotoğraf mevcut' : 'Fotoğraf yok';
-  document.getElementById('editIciMevcut').textContent = iciSrc2 ? '✓ Öncesi iç fotoğraf mevcut' : 'Fotoğraf yok';
-  document.getElementById('editDisSonraMevcut').textContent = disSonra2 ? '✓ Sonrası dış fotoğraf mevcut' : 'Henüz yok';
-  document.getElementById('editIciSonraMevcut').textContent = iciSonra2 ? '✓ Sonrası iç fotoğraf mevcut' : 'Henüz yok';
-  document.getElementById('editDisFoto').value = '';
-  document.getElementById('editIciFoto').value = '';
+  // Öncesi fotoğrafları göster
+  const driveThumbEdit = url => {
+    if (!url) return null;
+    const m = String(url).match(/[\/=]([a-zA-Z0-9_-]{25,})/);
+    return m ? `https://drive.google.com/thumbnail?id=${m[1]}&sz=w400` : null;
+  };
+  if (disSrc2) {
+    const thumb = driveThumbEdit(disSrc2);
+    const img = document.getElementById('editDisOnceImg');
+    img.src = thumb || ''; img.style.display = thumb ? 'block' : 'none';
+    document.getElementById('editDisOnceYok').style.display = thumb ? 'none' : 'block';
+    const lnk = document.getElementById('editDisOnceLink');
+    lnk.href = disSrc2; lnk.style.display = 'block';
+  }
+  if (iciSrc2) {
+    const thumb = driveThumbEdit(iciSrc2);
+    const img = document.getElementById('editIciOnceImg');
+    img.src = thumb || ''; img.style.display = thumb ? 'block' : 'none';
+    document.getElementById('editIciOnceYok').style.display = thumb ? 'none' : 'block';
+    const lnk = document.getElementById('editIciOnceLink');
+    lnk.href = iciSrc2; lnk.style.display = 'block';
+  }
+  document.getElementById('editDisSonraMevcut').textContent = disSonra2 ? '✓ Sonrası dış fotoğraf mevcut — yeni yüklerseniz değişir' : 'Henüz yok';
+  document.getElementById('editIciSonraMevcut').textContent = iciSonra2 ? '✓ Sonrası iç fotoğraf mevcut — yeni yüklerseniz değişir' : 'Henüz yok';
   document.getElementById('editDisSonraFoto').value = '';
   document.getElementById('editIciSonraFoto').value = '';
 
