@@ -286,12 +286,7 @@ select option[value=""]{color:#c4c0bb;}
       </div>
       <div class="field">
         <label>Telefon</label>
-        <div style="display:flex;align-items:center;gap:0;">
-          <span style="background:var(--surface2);border:1.5px solid var(--border);border-right:none;border-radius:10px 0 0 10px;padding:12px 14px;font-size:14.5px;font-weight:700;color:var(--text2);white-space:nowrap;line-height:1;">0 (5</span>
-          <input type="tel" id="telefon" placeholder="XX) XXX XX XX" maxlength="11"
-            style="border-radius:0 10px 10px 0;border-left:none;"
-            oninput="formatTelefon(this)"/>
-        </div>
+        <input type="tel" id="telefon" placeholder="05XX XXX XX XX"/>
       </div>
       <div class="field">
         <label>E-Mail</label>
@@ -837,23 +832,6 @@ function selectRadio(group, val) {
   hayir_check.innerHTML = val === 'hayir' ? '✕' : '';
 }
 
-// ── TELEFON FORMAT ───────────────────────────────────────────
-function formatTelefon(input) {
-  let v = input.value.replace(/\D/g, '');
-  if (v.length > 9) v = v.slice(0, 9);
-  let formatted = '';
-  if (v.length > 0) formatted += v.slice(0, 2);
-  if (v.length > 2) formatted += ') ' + v.slice(2, 5);
-  if (v.length > 5) formatted += ' ' + v.slice(5, 7);
-  if (v.length > 7) formatted += ' ' + v.slice(7, 9);
-  input.value = formatted;
-}
-
-function getTelefonTam() {
-  const val = document.getElementById('telefon').value.replace(/\D/g, '');
-  return val ? '05' + val : '';
-}
-
 // ── GPS ──────────────────────────────────────────────────────
 function getGPS() {
   const dot = document.getElementById('locDot');
@@ -959,7 +937,7 @@ async function submitForm() {
   const adSoyad = document.getElementById('adSoyad').value.trim();
   const firma   = document.getElementById('firma').value.trim();
   const platformId = document.getElementById('platformId').value.trim();
-  const telefon = getTelefonTam();
+  const telefon = document.getElementById('telefon').value.trim();
   const email   = document.getElementById('email').value.trim();
   const mapsLink= document.getElementById('mapsLink').value.trim();
   const tabela  = radioState.tabela;
